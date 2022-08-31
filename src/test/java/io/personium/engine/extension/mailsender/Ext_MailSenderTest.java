@@ -18,7 +18,7 @@ package io.personium.engine.extension.mailsender;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -42,9 +42,11 @@ import io.personium.engine.extension.support.ExtensionLogger;
 public class Ext_MailSenderTest {
 
     // SMTP mock object.
-    SimpleSmtpServer server = null;
+    static SimpleSmtpServer server = null;
     Field smtpHostField = null;
     Field smtpPortField = null;
+
+    int SMTPPORT_FOR_TEST = 11025;
 
     @BeforeClass
     public static void beforeClass() {
@@ -53,8 +55,7 @@ public class Ext_MailSenderTest {
 
     @Before
     public void before() throws Exception {
-        // default port is 25, but changed to 1025 for testing.;
-        server = SimpleSmtpServer.start(1025);
+        server = SimpleSmtpServer.start(SMTPPORT_FOR_TEST);
 
         smtpHostField = Ext_MailSender.class.getDeclaredField("smtpHost");
         smtpPortField = Ext_MailSender.class.getDeclaredField("smtpPort");
@@ -63,8 +64,11 @@ public class Ext_MailSenderTest {
     }
 
     @After
-    public void after() {
+    public void after() throws InterruptedException {
         server.stop();
+        //TODO: Fix this
+        // Wait for stop SimpleSmtpServer
+        Thread.sleep(100);
     }
 
     /**
@@ -89,7 +93,7 @@ public class Ext_MailSenderTest {
     public void リクエストにNULLを渡した場合例外を発すること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject reqJson = null;
         mailTransport.send(reqJson);
@@ -105,7 +109,7 @@ public class Ext_MailSenderTest {
     public void 宛先が全く指定されていない場合例外を発生すること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject reqJson = new NativeObject();
         reqJson.put("to", reqJson, new NativeArray(new Object[] {}));
@@ -131,7 +135,7 @@ public class Ext_MailSenderTest {
     public void 宛先各種1件毎を指定してメール送信できること_charset未指定() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -189,7 +193,7 @@ public class Ext_MailSenderTest {
     public void 宛先各種1件毎を指定してメール送信できること_ISO_2022_JP() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -247,7 +251,7 @@ public class Ext_MailSenderTest {
     public void toに不正な値を指定した場合にメールアドレス不正の例外が上がること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -282,7 +286,7 @@ public class Ext_MailSenderTest {
     public void toにマルチバイト文字列を指定した場合にメールアドレス不正の例外が上がること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -317,7 +321,7 @@ public class Ext_MailSenderTest {
     public void ccに不正な値を指定した場合にメールアドレス不正の例外が上がること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -352,7 +356,7 @@ public class Ext_MailSenderTest {
     public void bccに不正な値を指定した場合にメールアドレス不正の例外が上がること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -387,7 +391,7 @@ public class Ext_MailSenderTest {
     public void fromに不正な値を指定した場合にメールアドレス不正の例外が上がること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "MailTest1010");
@@ -426,7 +430,7 @@ public class Ext_MailSenderTest {
     public void replytoに不正な値を指定した場合にメールアドレス不正の例外が上がること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -465,7 +469,7 @@ public class Ext_MailSenderTest {
     public void 宛先各種1件毎を指定してメール送信できること_UTF_8() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -525,7 +529,7 @@ public class Ext_MailSenderTest {
     public void 宛先各種合計50件を指定してメール送信できること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -586,7 +590,7 @@ public class Ext_MailSenderTest {
     public void 宛先各種合計51件を指定して制限値超えでエラーとなること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -623,7 +627,7 @@ public class Ext_MailSenderTest {
     public void ReplyTo_50件を指定してメール送信できること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -687,7 +691,7 @@ public class Ext_MailSenderTest {
     public void ReplyTo_51件を指定して制限値超えでエラーとなること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -725,7 +729,7 @@ public class Ext_MailSenderTest {
     public void 必須プロパティ不足_From_でエラーとなること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -760,7 +764,7 @@ public class Ext_MailSenderTest {
     public void 必須プロパティ不足_ReplyTo_でエラーとなること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -795,7 +799,7 @@ public class Ext_MailSenderTest {
     public void 必須プロパティ不足_Subject_でエラーとなること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -830,7 +834,7 @@ public class Ext_MailSenderTest {
     public void 必須プロパティ不足_Text_でエラーとなること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -865,7 +869,7 @@ public class Ext_MailSenderTest {
     public void 宛先の表示名が省略されていてもてメール送信できること_UTF_8() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -923,7 +927,7 @@ public class Ext_MailSenderTest {
     public void 宛先の表示名にnullが指定されていてもてメール送信できること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -981,7 +985,7 @@ public class Ext_MailSenderTest {
     public void 宛先のaddressが省略されている場合エラーとなること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
@@ -1074,7 +1078,7 @@ public class Ext_MailSenderTest {
     public void カスタムヘッダが指定されていなくてもメール送信できること() throws Exception {
         Ext_MailSender mailTransport = new Ext_MailSender();
         smtpHostField.set(mailTransport, "localhost");
-        smtpPortField.set(mailTransport, "1025");
+        smtpPortField.set(mailTransport, String.valueOf(SMTPPORT_FOR_TEST));
 
         NativeObject sender = new NativeObject();
         sender.put("address", sender, "john999@example.com");
